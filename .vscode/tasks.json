@@ -1,0 +1,134 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "1. Install Dependencies",
+      "type": "shell",
+      "command": "npm",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "detail": "ติดตั้ง dependencies ทั้งหมด (รันครั้งแรกครั้งเดียว)"
+    },
+    {
+      "label": "2. Run Dev Server (port 3000)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev", "--", "-p", "3000"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "isBackground": true,
+      "detail": "รันแอปโหมด dev บนพอร์ต 3000 → /present (จอพี่) และ /join (จอน้อง)"
+    },
+    {
+      "label": "3. Build",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "detail": "Build เวอร์ชัน production (เช็ก type + คอมไพล์)"
+    },
+    {
+      "label": "4. Run Production Server (port 3000)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "start", "--", "-p", "3000"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "isBackground": true,
+      "detail": "รันแอปที่ build แล้วบนพอร์ต 3000 (นิ่งกว่า dev — แนะนำให้ใช้วันงานจริง) · ต้องรัน Task 3 ก่อน"
+    },
+    {
+      "label": "5. Build Static Fallback (Vercel backup)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "NEXT_PUBLIC_STATIC_MODE": "1"
+        }
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "detail": "Build โหมดสำรอง client-only (/join ทำงานเองไม่ต้องมี server) ไว้ deploy Vercel เป็น QR สำรอง"
+    },
+    {
+      "label": "6. Expose via ngrok (port 3000)",
+      "type": "shell",
+      "command": "ngrok",
+      "args": ["http", "3000"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "isBackground": true,
+      "detail": "เปิด tunnel ให้น้องสแกน — รัน Task 2/4 (พอร์ต 3000) ให้ขึ้นก่อน · จากนั้นเปิดหน้า /present ผ่าน URL ngrok (https://xxxx.ngrok-free.app/present) แล้ว QR จะชี้ tunnel ให้อัตโนมัติ (ต้องติดตั้ง ngrok ก่อน)"
+    }
+  ]
+}

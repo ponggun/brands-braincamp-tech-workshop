@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: #fbfbfd;
+}
+
+@layer utilities {
+  /* ปุ่มแตะง่ายบนมือถือ */
+  .tap-target {
+    min-height: 56px;
+  }
+  .no-tap-highlight {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* ตัดข้อความยาวไม่ให้ล้น */
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* ซ่อน scrollbar ในแถบเลื่อนแนวนอน (เช่น rail สไลด์) แต่ยังเลื่อนได้ */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
