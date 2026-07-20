@@ -648,6 +648,107 @@ export function SlideView(props: ViewProps) {
         />
       );
 
+    case "all-clusters":
+      return (
+        <div>
+          <Kicker>ผลควิซ · ทุกสายเจ๋งหมด 🎉</Kicker>
+          <h1 className="mt-1 font-display text-4xl font-bold text-ink text-balance">
+            5 สายเทค — สายไหนก็เริ่มได้เลย
+          </h1>
+          <p className="mt-2 text-lg text-ink/60">
+            น้องแต่ละคนได้ “สายที่ใช่” บนมือถือแล้ว — นี่คือภาพรวมทั้ง 5 สาย พร้อมอาชีพจริง + จุดเริ่ม
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {CLUSTER_ORDER.map((key) => {
+              const c = CLUSTERS[key];
+              return (
+                <div
+                  key={key}
+                  className="flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-black/5"
+                >
+                  <div
+                    className="px-4 pb-3 pt-4 text-white"
+                    style={{ backgroundColor: c.color }}
+                  >
+                    <div className="text-3xl">{c.emoji}</div>
+                    <p className="mt-1 font-display text-lg font-bold leading-tight">
+                      {c.name}
+                    </p>
+                    <p className="mt-1 text-sm leading-snug text-white/90">
+                      {c.tagline}
+                    </p>
+                  </div>
+                  <div className="flex flex-1 flex-col gap-3 px-4 py-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-ink/40">
+                        อาชีพ
+                      </p>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {c.careers.slice(0, 4).map((career) => (
+                          <span
+                            key={career}
+                            className="rounded-full px-2 py-0.5 text-xs font-medium"
+                            style={{ backgroundColor: `${c.color}1a`, color: c.color }}
+                          >
+                            {career}
+                          </span>
+                        ))}
+                        {c.careers.length > 4 && (
+                          <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-medium text-ink/50">
+                            +{c.careers.length - 4}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-ink/40">
+                        เริ่มยังไง
+                      </p>
+                      <ol className="mt-1 space-y-1">
+                        {c.roadmap.map((step, i) => (
+                          <li key={i} className="flex gap-1.5 text-xs text-ink/70">
+                            <span
+                              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                              style={{ backgroundColor: c.color }}
+                            >
+                              {i + 1}
+                            </span>
+                            <span className="leading-snug">{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                    <div className="mt-auto">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-ink/40">
+                        ลิงก์ฟรีเริ่มเลย
+                      </p>
+                      <div className="mt-1 grid gap-1">
+                        {c.links.map((l) => (
+                          <a
+                            key={l.url}
+                            href={l.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs font-medium transition hover:opacity-70"
+                            style={{ color: c.color }}
+                          >
+                            <span className="truncate">{l.label}</span>
+                            <span className="shrink-0 opacity-50">↗</span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-5 text-center text-xl font-semibold text-accent text-balance">
+            ไม่ต้องรีบเลือก — ลองได้หลายสาย · เดี๋ยวขอเจาะ 1 สายให้ “เห็นภาพจริง” →
+          </p>
+        </div>
+      );
+
     case "focus-webdev":
       return (
         <div className="text-center">

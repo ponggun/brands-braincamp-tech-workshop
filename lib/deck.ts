@@ -29,6 +29,7 @@ export const SLIDES: SlideMeta[] = [
   { id: "cluster-guess", label: "เดาสาย", activityId: "cluster-guess" },
   { id: "lab-intro", label: "LAB intro", timeLabel: "0:12–0:25" },
   { id: "career-quiz", label: "ควิซจับกลุ่ม 5 สาย", activityId: "career-quiz" },
+  { id: "all-clusters", label: "ผลทั้ง 5 สาย" },
   // Part B — เจาะ Web Dev ให้เห็นภาพ
   { id: "focus-webdev", label: "เจาะ Web Dev", timeLabel: "0:25–0:37" },
   { id: "webdev-why", label: "ทำไมเจาะ Web (สถิติ)" },
