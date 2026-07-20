@@ -4,6 +4,7 @@ import {
   getActiveActivity,
   getPollResults,
   getQuizResults,
+  getTextResults,
 } from "@/lib/store";
 import { ACTIVITIES } from "@/lib/activities";
 
@@ -23,10 +24,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(base, { headers });
   }
 
-  const results =
-    activity.kind === "poll"
-      ? getPollResults(activity.id)
-      : getQuizResults(activity.id);
+  let results;
+  if (activity.kind === "poll") {
+    results = getPollResults(activity.id);
+  } else if (activity.kind === "text") {
+    results = getTextResults(activity.id);
+  } else {
+    results = getQuizResults(activity.id);
+  }
 
   return NextResponse.json({ ...base, activityId, results }, { headers });
 }

@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 
-export function QRCodeImg({ url, size = 240 }: { url: string; size?: number }) {
+export function QRCodeImg({
+  url,
+  size = 240,
+  href,
+}: {
+  url: string;
+  size?: number;
+  href?: string; // ถ้าใส่ = ทำให้ QR กดเปิดลิงก์ได้ (เผื่อสแกนไม่สะดวก)
+}) {
   const [src, setSrc] = useState("");
 
   useEffect(() => {
@@ -24,18 +32,15 @@ export function QRCodeImg({ url, size = 240 }: { url: string; size?: number }) {
     };
   }, [url, size]);
 
-  if (!src) {
-    return (
-      <div
-        style={{ width: size, height: size }}
-        className="grid place-items-center rounded-2xl border-2 border-dashed border-black/15 text-ink/30"
-      >
-        QR
-      </div>
-    );
-  }
-  // eslint-disable-next-line @next/next/no-img-element
-  return (
+  const inner = !src ? (
+    <div
+      style={{ width: size, height: size }}
+      className="grid place-items-center rounded-2xl border-2 border-dashed border-black/15 text-ink/30"
+    >
+      QR
+    </div>
+  ) : (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       width={size}
@@ -44,4 +49,19 @@ export function QRCodeImg({ url, size = 240 }: { url: string; size?: number }) {
       className="rounded-2xl bg-white"
     />
   );
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="no-tap-highlight inline-block"
+        title={href}
+      >
+        {inner}
+      </a>
+    );
+  }
+  return inner;
 }

@@ -5,8 +5,8 @@ export const LINKS = {
   webGuideline: "https://roadmap.thaiprogrammer.org/paths/web-guideline/",
   career: "https://roadmap.thaiprogrammer.org/paths/career/",
   freeCodeCamp: "https://www.freecodecamp.org/",
-  // TODO: ใส่ลิงก์ทอล์ก/ช่อง YouTube ของพี่ป้อง
-  talk: "",
+  repo: "https://github.com/ponggun/brands-braincamp-tech-workshop",
+  talk: "https://youtube.com/playlist?list=PLbWE6xQS47vpOcP_7BfSrfruG16ECj1cU",
 };
 
 export type LadderStep = {
@@ -16,19 +16,40 @@ export type LadderStep = {
   highlight?: boolean;
 };
 
-// บันไดเรียน Web Dev (ย่อจาก web-guideline ให้ ม.ปลาย ไต่ทีละขั้น)
+// บันไดเรียน Web Dev — เป็น "แนวคิด/ขั้นตอน" ไม่อิงภาษาหรือเฟรมเวิร์ก
+// ย่อจาก TPA web-guideline (roadmap.thaiprogrammer.org/paths/web-guideline)
 export const LADDER: LadderStep[] = [
-  { emoji: "🏗️", name: "HTML", desc: "โครงหน้าเว็บ + เนื้อหา" },
-  { emoji: "🎨", name: "CSS", desc: "แต่งให้สวย จัด layout" },
-  { emoji: "⚡", name: "JavaScript", desc: "ทำให้กดแล้วโต้ตอบได้" },
-  { emoji: "🛡️", name: "TypeScript", desc: "JS ที่ปลอดภัย ผิดพลาดยากขึ้น" },
   {
-    emoji: "⚛️",
-    name: "React / Next.js",
-    desc: "framework ทำเว็บจริงจัง — แอปนี้ก็สร้างด้วย Next.js!",
+    emoji: "🧱",
+    name: "พื้นฐาน & เตรียมตัว",
+    desc: "เข้าใจว่าเว็บทำงานยังไง + เตรียมเครื่องมือ + ฝึกอ่านอังกฤษ",
+  },
+  {
+    emoji: "🎨",
+    name: "หน้าบ้าน (Front End)",
+    desc: "ทำสิ่งที่คนเห็นและกดใช้ — เริ่มตรงนี้ก่อน เห็นผลไวสุด 👈",
     highlight: true,
   },
-  { emoji: "🗄️", name: "Backend · DB · Git · Deploy", desc: "เก็บข้อมูล + เอาขึ้นเน็ตจริง" },
+  {
+    emoji: "🧠",
+    name: "หลังบ้าน (Back End)",
+    desc: "ตรรกะเบื้องหลัง คิดเป็นขั้นตอน + ทำ API",
+  },
+  {
+    emoji: "🗄️",
+    name: "ฐานข้อมูล (Database)",
+    desc: "เก็บและดึงข้อมูลอย่างเป็นระบบ",
+  },
+  {
+    emoji: "🔀",
+    name: "จัดการเวอร์ชัน (Git)",
+    desc: "เก็บประวัติโค้ด + ทำงานเป็นทีมได้",
+  },
+  {
+    emoji: "🚀",
+    name: "ขึ้นออนไลน์ (Deploy & Cloud)",
+    desc: "เอาเว็บออกสู่โลกให้คนใช้จริง",
+  },
 ];
 
 // ตัวคูณของ AI (จากทอล์กพี่ป้อง: No Tools=1 / Coding=10 / AI=100)

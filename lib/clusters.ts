@@ -54,7 +54,7 @@ export const CLUSTERS: Record<ClusterKey, Cluster> = {
   data: {
     key: "data",
     emoji: "🤖",
-    name: "Data & AI",
+    name: "Data & AI — ข้อมูล & สอนเครื่องให้ฉลาด",
     tagline: "ชอบเล่นกับตัวเลข จับแพตเทิร์น และสอนเครื่องให้ฉลาดขึ้น",
     color: "#7C3AED",
     careers: [

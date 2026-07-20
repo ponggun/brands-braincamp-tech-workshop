@@ -7,6 +7,7 @@ const DONE = "bbc_done";
 const QUIZ_RESULT = "bbc_quiz_result";
 const QUIZ_PROGRESS = "bbc_quiz_progress";
 const POLL = (id: string) => `bbc_poll_${id}`;
+const TEXT = (id: string) => `bbc_text_${id}`;
 
 function read<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -53,6 +54,13 @@ export function getPollSelection(id: string): string | null {
 }
 export function setPollSelection(id: string, optionId: string) {
   write(POLL(id), optionId);
+}
+
+export function getTextSubmission(id: string): string | null {
+  return read<string | null>(TEXT(id), null);
+}
+export function setTextSubmission(id: string, text: string) {
+  write(TEXT(id), text);
 }
 
 export type StoredQuizResult = { answers: QuizAnswers; result: QuizResult };

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { touchSession, recordPoll, recordQuiz } from "@/lib/store";
+import { touchSession, recordPoll, recordQuiz, recordText } from "@/lib/store";
 import { ACTIVITIES } from "@/lib/activities";
 import { CLUSTER_ORDER, type ClusterKey } from "@/lib/clusters";
 
@@ -26,6 +26,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "bad option" }, { status: 400 });
     }
     recordPoll(activityId, sid, optionId);
+  } else if (activity.kind === "text") {
+    const text = String(body?.text ?? "").trim().slice(0, 280);
+    if (!text) {
+      return NextResponse.json({ ok: false, error: "empty text" }, { status: 400 });
+    }
+    recordText(activityId, sid, text);
   } else {
     const primary = body?.primary;
     const topRaw = Array.isArray(body?.top) ? (body.top as unknown[]) : [];

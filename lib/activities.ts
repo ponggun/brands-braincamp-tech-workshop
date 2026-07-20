@@ -18,7 +18,15 @@ export type QuizActivityRef = {
   subtitle?: string;
 };
 
-export type Activity = PollActivity | QuizActivityRef;
+export type TextActivity = {
+  id: string;
+  kind: "text";
+  title: string;
+  subtitle?: string;
+  placeholder?: string;
+};
+
+export type Activity = PollActivity | QuizActivityRef | TextActivity;
 
 const clusterGuessOptions: PollOption[] = CLUSTER_ORDER.map((key) => ({
   id: key,
@@ -27,10 +35,27 @@ const clusterGuessOptions: PollOption[] = CLUSTER_ORDER.map((key) => ({
 }));
 
 export const ACTIVITIES: Record<string, Activity> = {
+  "know-neighbor": {
+    id: "know-neighbor",
+    kind: "poll",
+    title: "รู้จักเพื่อนที่นั่งข้าง ๆ หรือยังเอ่ย? 🙂",
+    subtitle: "ตอบตามจริงได้เลย — เดี๋ยวเราค่อยทำความรู้จักกัน",
+    options: [
+      { id: "known", emoji: "🤝", label: "รู้จักชื่อเพื่อนข้าง ๆ แล้ว" },
+      { id: "not-yet", emoji: "👋", label: "ยังไม่รู้จักเลย" },
+    ],
+  },
+  expectation: {
+    id: "expectation",
+    kind: "text",
+    title: "คาดหวังยังไงกับ workshop นี้บ้าง? ✍️",
+    subtitle: "พิมพ์สั้น ๆ ก็ได้ — ไม่มีผิดถูก",
+    placeholder: "เช่น อยากลองเขียนโค้ดเป็นครั้งแรก, อยากรู้ว่าสายเทคทำอะไรบ้าง…",
+  },
   icebreaker: {
     id: "icebreaker",
     kind: "poll",
-    title: "สารภาพมา 😏 เคยเขียนโค้ด/โปรแกรมมาก่อนแค่ไหน?",
+    title: "มาแชร์กันหน่อย 😊 เคยลองเขียนโค้ด/โปรแกรมมาบ้างไหม?",
     subtitle: "ไม่มีผิดถูกนะ — ตอบตามจริงเลย",
     options: [
       { id: "lvl0", emoji: "🐣", label: "ยังไม่เคยเลย — มาเริ่มนับหนึ่งวันนี้แหละ!" },
@@ -38,6 +63,13 @@ export const ACTIVITIES: Record<string, Activity> = {
       { id: "lvl2", emoji: "🛠️", label: "เขียนได้บ้าง เคยทำโปรเจกต์เล็ก ๆ" },
       { id: "lvl3", emoji: "🚀", label: "เขียนคล่อง จริงจังอยู่" },
     ],
+  },
+  "why-code": {
+    id: "why-code",
+    kind: "text",
+    title: "เราเขียนโปรแกรมกันไปทำไมนะ? 🤔",
+    subtitle: "เดา/แชร์ได้เลย ไม่มีผิดถูก — เดี๋ยวมาเฉลยไปด้วยกัน",
+    placeholder: "เช่น ทำเกม, ทำแอป, ให้ชีวิตง่ายขึ้น, แก้ปัญหา, หาเงิน…",
   },
   "fe-be-quiz": {
     id: "fe-be-quiz",
@@ -87,4 +119,8 @@ export function getActivity(id: string | null | undefined): Activity | null {
 
 export function isPoll(a: Activity | null): a is PollActivity {
   return !!a && a.kind === "poll";
+}
+
+export function isText(a: Activity | null): a is TextActivity {
+  return !!a && a.kind === "text";
 }

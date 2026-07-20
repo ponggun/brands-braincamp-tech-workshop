@@ -15,6 +15,8 @@ type Store = {
   polls: Map<string, Map<string, string>>;
   // activityId -> (sid -> ผลควิซ)
   quiz: Map<string, Map<string, QuizRecord>>;
+  // activityId -> (sid -> ข้อความ) : free text 1 คน 1 คำตอบ (เปลี่ยนได้)
+  texts: Map<string, Map<string, string>>;
 };
 
 const globalForStore = globalThis as unknown as { __bbcStore?: Store };
@@ -25,6 +27,7 @@ function createStore(): Store {
     sessions: new Map(),
     polls: new Map(),
     quiz: new Map(),
+    texts: new Map(),
   };
 }
 
@@ -87,6 +90,20 @@ export function recordQuiz(
   map.set(sid, record);
 }
 
+export function recordText(
+  activityId: string,
+  sid: string,
+  text: string
+): void {
+  const store = getStore();
+  let map = store.texts.get(activityId);
+  if (!map) {
+    map = new Map();
+    store.texts.set(activityId, map);
+  }
+  map.set(sid, text);
+}
+
 export type PollResults = {
   kind: "poll";
   total: number;
@@ -97,6 +114,12 @@ export type QuizResults = {
   kind: "quiz";
   total: number;
   primaryCounts: Record<string, number>; // clusterKey -> จำนวนที่ได้เป็นสายหลัก
+};
+
+export type TextResults = {
+  kind: "text";
+  total: number;
+  entries: string[]; // ข้อความล่าสุดอยู่บนสุด
 };
 
 export function getPollResults(activityId: string): PollResults {
@@ -125,10 +148,18 @@ export function getQuizResults(activityId: string): QuizResults {
   return { kind: "quiz", total, primaryCounts };
 }
 
+export function getTextResults(activityId: string): TextResults {
+  const map = getStore().texts.get(activityId);
+  // Map เก็บตามลำดับที่ใส่ — reverse ให้ข้อความล่าสุดขึ้นก่อน
+  const entries = map ? [...map.values()].reverse() : [];
+  return { kind: "text", total: entries.length, entries };
+}
+
 export function resetActivity(activityId: string): void {
   const store = getStore();
   store.polls.delete(activityId);
   store.quiz.delete(activityId);
+  store.texts.delete(activityId);
 }
 
 export function resetAll(): void {

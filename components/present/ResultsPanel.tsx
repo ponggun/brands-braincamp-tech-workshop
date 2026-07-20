@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getActivity, isPoll } from "@/lib/activities";
 import { CLUSTERS, CLUSTER_ORDER, type ClusterKey } from "@/lib/clusters";
+import { avatarFor } from "@/lib/avatar";
 import { ResultBar } from "@/components/ui/ResultBar";
 
 const PALETTE = ["#F26A21", "#00A651", "#0EA5E9", "#7C3AED", "#EC4899", "#F59E0B"];
@@ -13,7 +14,8 @@ type ResultsResponse = {
   activityId?: string;
   results?:
     | { kind: "poll"; total: number; counts: Record<string, number> }
-    | { kind: "quiz"; total: number; primaryCounts: Record<string, number> };
+    | { kind: "quiz"; total: number; primaryCounts: Record<string, number> }
+    | { kind: "text"; total: number; entries: string[] };
 };
 
 const isCluster = (v: string): v is ClusterKey =>
@@ -69,6 +71,30 @@ export function ResultsPanel({ activityId }: { activityId: string }) {
                 color={isCluster(opt.id) ? CLUSTERS[opt.id].color : PALETTE[i % PALETTE.length]}
               />
             ))
+          : null}
+
+        {activity.kind === "text" && results?.kind === "text"
+          ? results.entries.map((text, i) => {
+              const av = avatarFor(text);
+              return (
+                <div
+                  key={`${i}-${text}`}
+                  className="animate-pop-in flex items-center gap-3 rounded-2xl border-2 border-black/10 bg-white px-3 py-3"
+                >
+                  <span
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-2xl shadow-md ring-2 ring-white"
+                    style={{ background: av.gradient }}
+                  >
+                    {av.face}
+                  </span>
+                  <p className="text-ink/80">
+                    <span className="mr-1 text-brand">“</span>
+                    {text}
+                    <span className="ml-1 text-brand">”</span>
+                  </p>
+                </div>
+              );
+            })
           : null}
 
         {activity.kind === "quiz" && results?.kind === "quiz"

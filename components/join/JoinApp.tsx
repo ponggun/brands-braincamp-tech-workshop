@@ -2,12 +2,20 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSessionId } from "@/lib/session";
-import { getActivity, isPoll, type PollActivity } from "@/lib/activities";
+import {
+  getActivity,
+  isPoll,
+  isText,
+  type PollActivity,
+  type TextActivity,
+} from "@/lib/activities";
 import type { QuizAnswers, QuizResult } from "@/lib/quiz";
 import {
   getDone,
   getPollSelection,
   setPollSelection,
+  getTextSubmission,
+  setTextSubmission,
   markDone,
   getQuizResult,
   setQuizResult,
@@ -16,6 +24,7 @@ import {
 } from "@/lib/progress";
 import { JoinShell } from "./JoinShell";
 import { PollCard } from "./PollCard";
+import { TextCard } from "./TextCard";
 import { Quiz } from "./Quiz";
 import { ResultCard } from "./ResultCard";
 import { Standby } from "./Standby";
@@ -76,6 +85,23 @@ export function JoinApp() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sid, activityId: activity.id, optionId }),
+        });
+      } catch {
+        /* เก็บไว้ในเครื่อง ถ้าเน็ตหลุดก็ไม่เป็นไร */
+      }
+    },
+    [sid, rerender]
+  );
+
+  const submitText = useCallback(
+    async (activity: TextActivity, text: string) => {
+      setTextSubmission(activity.id, text);
+      rerender();
+      try {
+        await fetch("/api/respond", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sid, activityId: activity.id, text }),
         });
       } catch {
         /* เก็บไว้ในเครื่อง ถ้าเน็ตหลุดก็ไม่เป็นไร */
@@ -159,6 +185,14 @@ export function JoinApp() {
         activity={activity}
         selected={getPollSelection(activity.id)}
         onSelect={(optionId) => submitPoll(activity, optionId)}
+      />
+    );
+  } else if (isText(activity)) {
+    content = (
+      <TextCard
+        activity={activity}
+        submitted={getTextSubmission(activity.id)}
+        onSubmit={(text) => submitText(activity, text)}
       />
     );
   } else {
