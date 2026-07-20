@@ -7,6 +7,8 @@ export const LINKS = {
   freeCodeCamp: "https://www.freecodecamp.org/",
   repo: "https://github.com/ponggun/brands-braincamp-tech-workshop",
   talk: "https://youtube.com/playlist?list=PLbWE6xQS47vpOcP_7BfSrfruG16ECj1cU",
+  handout:
+    "https://github.com/ponggun/brands-braincamp-tech-workshop/raw/refs/heads/main/public/documents/BrainCamp2026-Tech-Slides.pdf",
 };
 
 export type LadderStep = {

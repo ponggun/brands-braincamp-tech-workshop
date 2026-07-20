@@ -1437,7 +1437,12 @@ export function SlideView(props: ViewProps) {
           <p className="mt-1 text-lg text-ink/60">
             สแกน QR หรือ “กดที่ลิงก์ใต้ QR” ก็ได้ — เอาไปเล่นต่อที่บ้าน
           </p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            <QRCard
+              url={LINKS.handout}
+              title="สไลด์วันนี้ทั้งหมด 📑"
+              sub="PDF ทบทวน"
+            />
             <QRCard
               url={LINKS.webGuideline}
               title="เจาะ Web Dev ต่อ"
@@ -1457,6 +1462,9 @@ export function SlideView(props: ViewProps) {
           </div>
           <div className="mt-5 grid items-start gap-4 md:grid-cols-2">
             <div className="space-y-2">
+              <p className="text-lg text-ink/80">
+                • เปิด <span className="font-bold text-accent">สไลด์วันนี้ทั้งหมด (PDF)</span> ทบทวนได้จาก QR ซ้ายสุด
+              </p>
               <p className="text-lg text-ink/80">• ทำควิซซ้ำที่บ้านได้ ลองหลายสาย</p>
               <p className="text-lg text-ink/80">
                 • เปิดปุ่ม <span className="font-bold text-accent">Advanced 🔥</span> ถ้าอยากไปต่อ
