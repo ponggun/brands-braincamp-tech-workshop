@@ -24,6 +24,9 @@ yarn-error.log*
 .env
 .env*.local
 
+# cloudflare tunnel token (ห้ามขึ้น git — ใครได้ไปก็ต่อ tunnel เข้าเครื่องเราได้)
+.cloudflared-token
+
 # typescript
 *.tsbuildinfo
 

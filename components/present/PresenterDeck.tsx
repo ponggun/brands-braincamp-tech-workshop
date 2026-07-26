@@ -3,18 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SLIDES, SLIDE_COUNT } from "@/lib/deck";
 import { getActivity } from "@/lib/activities";
+import { useEventStream } from "@/lib/useEventStream";
+import type { PresenterSnapshot } from "@/lib/snapshot";
 import { SlideView } from "./SlideView";
 
 const SLIDE_KEY = "bbc_present_slide";
 const PKEY_KEY = "bbc_present_key";
+const FALLBACK_POLL_MS = 8000;
 
 export function PresenterDeck() {
   const [current, setCurrent] = useState(0);
   const [presenterKey, setPresenterKey] = useState("");
-  const [status, setStatus] = useState<{
-    joinCount: number;
-    activeActivity: string | null;
-  }>({ joinCount: 0, activeActivity: null });
 
   // โหลดค่าที่จำไว้
   useEffect(() => {
@@ -31,26 +30,19 @@ export function PresenterDeck() {
     });
   }, []);
 
-  // สถานะสด (จำนวนคน + กิจกรรมที่เปิดอยู่)
-  const pollStatus = useCallback(async () => {
-    try {
-      const res = await fetch("/api/results", { cache: "no-store" });
-      if (!res.ok) return;
-      const json = (await res.json()) as {
-        joinCount: number;
-        activeActivity: string | null;
-      };
-      setStatus({ joinCount: json.joinCount, activeActivity: json.activeActivity });
-    } catch {
-      /* ปล่อยผ่าน */
-    }
-  }, []);
-
-  useEffect(() => {
-    pollStatus();
-    const id = setInterval(pollStatus, 3000);
-    return () => clearInterval(id);
-  }, [pollStatus]);
+  // สถานะสด (จำนวนคน + กิจกรรมที่เปิดอยู่ + ผลของสไลด์นี้) — push ผ่าน SSE
+  const slide = SLIDES[current];
+  const currentActivityId = slide.activityId ?? null;
+  const q = currentActivityId
+    ? `&activityId=${encodeURIComponent(currentActivityId)}`
+    : "";
+  const { data } = useEventStream<PresenterSnapshot>(
+    `/api/events?presenter=1${q}`,
+    `/api/results?${q.slice(1)}`,
+    FALLBACK_POLL_MS
+  );
+  const joinCount = data?.joinCount ?? 0;
+  const activeActivity = data?.activeActivity ?? null;
 
   // คีย์บอร์ดเลื่อนสไลด์ (ไม่ทำงานถ้ากำลังพิมพ์ในช่อง input)
   const currentRef = useRef(current);
@@ -81,14 +73,12 @@ export function PresenterDeck() {
     } catch {
       /* noop */
     }
-    pollStatus();
+    // ไม่ต้อง refetch — server broadcast กลับมาทาง SSE เอง
   }
 
-  const slide = SLIDES[current];
-  const currentActivityId = slide.activityId ?? null;
   const strayActivity =
-    status.activeActivity && status.activeActivity !== currentActivityId
-      ? getActivity(status.activeActivity)
+    activeActivity && activeActivity !== currentActivityId
+      ? getActivity(activeActivity)
       : null;
 
   return (
@@ -99,9 +89,9 @@ export function PresenterDeck() {
           <div className="w-full">
             <SlideView
               slide={slide}
-              activeActivity={status.activeActivity}
+              activeActivity={activeActivity}
               presenterKey={presenterKey}
-              onChanged={pollStatus}
+              live={data}
             />
           </div>
         </div>
@@ -139,7 +129,7 @@ export function PresenterDeck() {
 
           <div className="ml-auto flex items-center gap-3">
             <span className="rounded-full bg-brand-light px-3 py-1.5 text-sm font-semibold text-brand-dark">
-              👥 {status.joinCount} คน
+              👥 {joinCount} คน
             </span>
 
             {strayActivity && (
@@ -152,7 +142,10 @@ export function PresenterDeck() {
               </button>
             )}
 
+            {/* type=password เพราะแถบนี้ขึ้นโปรเจกเตอร์/แชร์จอ — ห้ามให้รหัสโผล่ */}
             <input
+              type="password"
+              autoComplete="off"
               value={presenterKey}
               onChange={(e) => {
                 setPresenterKey(e.target.value);

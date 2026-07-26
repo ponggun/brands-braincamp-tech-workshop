@@ -1,55 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { getActivity, isPoll } from "@/lib/activities";
 import { CLUSTERS, CLUSTER_ORDER, type ClusterKey } from "@/lib/clusters";
 import { avatarFor } from "@/lib/avatar";
 import { ResultBar } from "@/components/ui/ResultBar";
+import type { PresenterSnapshot } from "@/lib/snapshot";
 
 const PALETTE = ["#F26A21", "#00A651", "#0EA5E9", "#7C3AED", "#EC4899", "#F59E0B"];
-
-type ResultsResponse = {
-  joinCount: number;
-  activeActivity: string | null;
-  activityId?: string;
-  results?:
-    | { kind: "poll"; total: number; counts: Record<string, number> }
-    | { kind: "quiz"; total: number; primaryCounts: Record<string, number> }
-    | { kind: "text"; total: number; entries: string[] };
-};
 
 const isCluster = (v: string): v is ClusterKey =>
   (CLUSTER_ORDER as string[]).includes(v);
 
-export function ResultsPanel({ activityId }: { activityId: string }) {
-  const [data, setData] = useState<ResultsResponse | null>(null);
+// ข้อมูลถูก push มาจาก SSE ที่ PresenterDeck แล้วส่งลงมาเป็น prop — ไม่ poll เองอีก
+export function ResultsPanel({
+  activityId,
+  data,
+}: {
+  activityId: string;
+  data: PresenterSnapshot | null;
+}) {
   const activity = getActivity(activityId);
-
-  useEffect(() => {
-    let alive = true;
-    async function poll() {
-      try {
-        const res = await fetch(
-          `/api/results?activityId=${encodeURIComponent(activityId)}`,
-          { cache: "no-store" }
-        );
-        if (!res.ok) return;
-        const json = (await res.json()) as ResultsResponse;
-        if (alive) setData(json);
-      } catch {
-        /* ปล่อยผ่าน */
-      }
-    }
-    poll();
-    const id = setInterval(poll, 2500);
-    return () => {
-      alive = false;
-      clearInterval(id);
-    };
-  }, [activityId]);
-
   if (!activity) return null;
-  const results = data?.results;
+
+  // ระหว่างสลับสไลด์ ข้อมูลรอบก่อนอาจยังเป็นของกิจกรรมเดิม — อย่าเอามาโชว์ผิดอัน
+  const results = data?.activityId === activityId ? data.results : undefined;
   const total = results?.total ?? 0;
 
   return (

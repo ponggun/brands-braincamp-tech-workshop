@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { touchSession, getActiveActivity } from "@/lib/store";
+import { touchSession } from "@/lib/store";
+import { studentSnapshot } from "@/lib/snapshot";
 
 export const dynamic = "force-dynamic";
 
-// น้อง short-poll ทุก ~2.5 วิ: อัปเดต heartbeat + คืนกิจกรรมที่พี่เปิดอยู่
+// polling สำรองของจอน้อง (ปกติใช้ SSE ที่ /api/events)
 export async function GET(req: NextRequest) {
   const sid = req.nextUrl.searchParams.get("sid") ?? "";
   touchSession(sid);
-  return NextResponse.json(
-    { activeActivity: getActiveActivity() },
-    { headers: { "Cache-Control": "no-store" } }
-  );
+  return NextResponse.json(studentSnapshot(), {
+    headers: { "Cache-Control": "no-store" },
+  });
 }

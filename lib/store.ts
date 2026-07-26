@@ -1,6 +1,7 @@
 // In-memory store สำหรับ session สด — ไม่มี DB, ไม่เก็บ PII
 // เก็บบน globalThis เพื่อให้รอด hot-reload ตอน dev
 import type { ClusterKey } from "./clusters";
+import { broadcast, liveSids } from "./hub";
 
 export type QuizRecord = {
   top: ClusterKey[];
@@ -47,15 +48,17 @@ export function touchSession(sid: string): void {
 
 export function getJoinCount(): number {
   const now = Date.now();
-  let count = 0;
-  for (const lastSeen of getStore().sessions.values()) {
-    if (now - lastSeen <= ONLINE_WINDOW_MS) count++;
+  // รวม 2 แหล่ง: คนที่ต่อ SSE ค้างอยู่ + คนที่ fallback ไป polling (ดูจาก lastSeen)
+  const online = liveSids();
+  for (const [sid, lastSeen] of getStore().sessions) {
+    if (now - lastSeen <= ONLINE_WINDOW_MS) online.add(sid);
   }
-  return count;
+  return online.size;
 }
 
 export function setActiveActivity(activityId: string | null): void {
   getStore().activeActivity = activityId;
+  broadcast();
 }
 
 export function getActiveActivity(): string | null {
@@ -74,6 +77,7 @@ export function recordPoll(
     store.polls.set(activityId, map);
   }
   map.set(sid, optionId);
+  broadcast();
 }
 
 export function recordQuiz(
@@ -88,6 +92,7 @@ export function recordQuiz(
     store.quiz.set(activityId, map);
   }
   map.set(sid, record);
+  broadcast();
 }
 
 export function recordText(
@@ -102,6 +107,7 @@ export function recordText(
     store.texts.set(activityId, map);
   }
   map.set(sid, text);
+  broadcast();
 }
 
 export type PollResults = {
@@ -160,8 +166,10 @@ export function resetActivity(activityId: string): void {
   store.polls.delete(activityId);
   store.quiz.delete(activityId);
   store.texts.delete(activityId);
+  broadcast();
 }
 
 export function resetAll(): void {
   globalForStore.__bbcStore = createStore();
+  broadcast();
 }

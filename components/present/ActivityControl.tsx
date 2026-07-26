@@ -16,16 +16,15 @@ async function postJSON(url: string, body: unknown): Promise<boolean> {
   }
 }
 
+// สั่งงานแล้วไม่ต้อง refetch — server broadcast กลับมาทาง SSE เอง
 export function ActivityControl({
   activityId,
   activeActivity,
   presenterKey,
-  onChanged,
 }: {
   activityId: string;
   activeActivity: string | null;
   presenterKey: string;
-  onChanged: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -39,8 +38,7 @@ export function ActivityControl({
     setError(false);
     const ok = await postJSON("/api/activity", body);
     setBusy(false);
-    if (!ok) setError(true);
-    else onChanged();
+    setError(!ok);
   }
 
   async function reset() {
@@ -48,7 +46,6 @@ export function ActivityControl({
     setBusy(true);
     await postJSON("/api/reset", { activityId, key: presenterKey });
     setBusy(false);
-    onChanged();
   }
 
   return (

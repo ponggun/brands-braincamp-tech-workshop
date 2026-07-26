@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getSessionId } from "@/lib/session";
+import { useEventStream } from "@/lib/useEventStream";
+import type { StudentSnapshot } from "@/lib/snapshot";
 import {
   getActivity,
   isPoll,
@@ -29,12 +31,11 @@ import { Quiz } from "./Quiz";
 import { ResultCard } from "./ResultCard";
 import { Standby } from "./Standby";
 
-const POLL_MS = 2500;
+// ช้ากว่าเดิม (2.5 วิ) เยอะ — ใช้เฉพาะตอน SSE ต่อไม่ได้เท่านั้น
+const FALLBACK_POLL_MS = 8000;
 
 export function JoinApp() {
   const [sid, setSid] = useState("");
-  const [activeActivity, setActiveActivity] = useState<string | null>(null);
-  const [reconnecting, setReconnecting] = useState(false);
   const [viewResult, setViewResult] = useState(false);
   const [tick, setTick] = useState(0); // บังคับ re-read localStorage
   const rerender = useCallback(() => setTick((t) => t + 1), []);
@@ -43,38 +44,20 @@ export function JoinApp() {
     setSid(getSessionId());
   }, []);
 
-  // short-poll สถานะกิจกรรมที่พี่เปิด
-  const activeRef = useRef<string | null>(null);
+  // รับกิจกรรมที่พี่เปิดแบบ push (SSE) — ถอยไป polling ให้เองถ้าต่อไม่ได้
+  const q = sid ? `sid=${encodeURIComponent(sid)}` : "";
+  const { data, connected } = useEventStream<StudentSnapshot>(
+    sid ? `/api/events?${q}` : null,
+    sid ? `/api/live?${q}` : null,
+    FALLBACK_POLL_MS
+  );
+  const activeActivity = data?.activeActivity ?? null;
+  const reconnecting = !connected;
+
+  // พี่เปิดกิจกรรมใหม่ → ปิดหน้า "ดูผลของฉัน" ให้อัตโนมัติ
   useEffect(() => {
-    if (!sid) return;
-    let alive = true;
-
-    async function poll() {
-      try {
-        const res = await fetch(`/api/live?sid=${encodeURIComponent(sid)}`, {
-          cache: "no-store",
-        });
-        if (!res.ok) throw new Error("bad status");
-        const data = (await res.json()) as { activeActivity: string | null };
-        if (!alive) return;
-        setReconnecting(false);
-        if (data.activeActivity !== activeRef.current) {
-          activeRef.current = data.activeActivity;
-          setActiveActivity(data.activeActivity);
-          if (data.activeActivity) setViewResult(false);
-        }
-      } catch {
-        if (alive) setReconnecting(true);
-      }
-    }
-
-    poll();
-    const id = setInterval(poll, POLL_MS);
-    return () => {
-      alive = false;
-      clearInterval(id);
-    };
-  }, [sid]);
+    if (activeActivity) setViewResult(false);
+  }, [activeActivity]);
 
   const submitPoll = useCallback(
     async (activity: PollActivity, optionId: string) => {

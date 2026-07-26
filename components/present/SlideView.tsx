@@ -5,6 +5,7 @@ import type { SlideMeta } from "@/lib/deck";
 import { getActivity } from "@/lib/activities";
 import { CLUSTERS, CLUSTER_ORDER } from "@/lib/clusters";
 import { LADDER, LINKS, AMPLIFY } from "@/lib/webdev";
+import type { PresenterSnapshot } from "@/lib/snapshot";
 import { ActivityControl } from "./ActivityControl";
 import { ResultsPanel } from "./ResultsPanel";
 import { QRCodeImg } from "./QRCodeImg";
@@ -13,7 +14,7 @@ type ViewProps = {
   slide: SlideMeta;
   activeActivity: string | null;
   presenterKey: string;
-  onChanged: () => void;
+  live: PresenterSnapshot | null;
 };
 
 function Kicker({ children }: { children: React.ReactNode }) {
@@ -25,8 +26,8 @@ function Kicker({ children }: { children: React.ReactNode }) {
 }
 
 function CoverQR() {
-  // อ่าน hostname ที่เปิดหน้านี้อยู่ → gen QR อัตโนมัติ
-  // เปิด /present ผ่าน URL ngrok → QR ชี้ ngrok ให้เอง ไม่ต้องวางมือ
+  // ลำดับความสำคัญ: ช่องกรอกสด > NEXT_PUBLIC_JOIN_URL > origin ของหน้าที่เปิดอยู่
+  // ตั้ง NEXT_PUBLIC_JOIN_URL = โดเมน tunnel ไว้ พี่จะเปิด /present ที่ localhost ได้โดย QR ยังชี้ถูก
   const [origin, setOrigin] = useState("");
   const [override, setOverride] = useState("");
   useEffect(() => {
@@ -57,13 +58,13 @@ function CoverQR() {
       )}
       {isLocal && (
         <p className="max-w-[280px] text-center text-xs font-medium text-accent-dark">
-          ⚠️ กำลังเปิดผ่าน localhost — เปิดหน้านี้ผ่าน URL ngrok เพื่อให้ QR ชี้ tunnel อัตโนมัติ หรือวาง URL เองด้านล่าง
+          ⚠️ QR ยังชี้ localhost — ตั้ง NEXT_PUBLIC_JOIN_URL ใน .env.local เป็นโดเมน tunnel หรือวาง URL เองด้านล่าง
         </p>
       )}
       <input
         value={override}
         onChange={(e) => setOverride(e.target.value)}
-        placeholder="(ออปชัน) วาง ngrok URL เอง เช่น https://xxxx.ngrok-free.app"
+        placeholder="(ออปชัน) วาง URL เอง เช่น https://braincamp.ponggun.com"
         className="w-full max-w-xs rounded-lg border border-black/10 px-3 py-2 text-sm"
       />
     </div>
@@ -242,9 +243,118 @@ function ActivitySlide({
           activityId={activityId}
           activeActivity={props.activeActivity}
           presenterKey={props.presenterKey}
-          onChanged={props.onChanged}
         />
-        <ResultsPanel activityId={activityId} />
+        <ResultsPanel activityId={activityId} data={props.live} />
+      </div>
+    </div>
+  );
+}
+
+// การ์ด 1 ตัวในแผนที่ระบบ (สไลด์ app-live-map)
+function MapCard({
+  emoji,
+  title,
+  sub,
+  detail,
+  tone,
+}: {
+  emoji: string;
+  title: string;
+  sub: string;
+  detail: string;
+  tone: "brand" | "sky" | "ink";
+}) {
+  const skin = {
+    brand: "border-brand bg-brand-light text-brand-dark",
+    sky: "border-sky-400 bg-sky-50 text-sky-700",
+    ink: "border-ink bg-ink text-white",
+  }[tone];
+  return (
+    <div className={`flex h-full flex-col items-center rounded-3xl border-2 px-4 py-5 text-center shadow-sm ${skin}`}>
+      <span className="text-5xl leading-none">{emoji}</span>
+      <p className="mt-3 font-display text-xl font-bold">{title}</p>
+      <p className="text-sm font-semibold opacity-80">{sub}</p>
+      <p className="mt-2 text-sm opacity-90 text-balance">{detail}</p>
+    </div>
+  );
+}
+
+// ลูกศรสองทางระหว่างการ์ด — ขึ้นบรรทัดเดียวบนจอกว้าง
+function MapArrows({ out, back }: { out: string; back: string }) {
+  return (
+    <div className="flex shrink-0 flex-col justify-center gap-2 px-1 py-2">
+      <span className="whitespace-nowrap rounded-full bg-white px-3 py-1 text-center text-xs font-semibold text-ink/60 shadow-sm ring-1 ring-black/5">
+        {out} ➜
+      </span>
+      <span className="whitespace-nowrap rounded-full bg-white px-3 py-1 text-center text-xs font-semibold text-ink/60 shadow-sm ring-1 ring-black/5">
+        ⬅ {back}
+      </span>
+    </div>
+  );
+}
+
+// สีประจำ HTML / CSS / JS ใช้ร่วมกันระหว่างหมุดกับคำอธิบาย (สไลด์ frontend-three-map)
+const LAYER_TONE = {
+  html: "bg-orange-500",
+  css: "bg-sky-500",
+  js: "bg-violet-500",
+} as const;
+
+type LayerTone = keyof typeof LAYER_TONE;
+
+// หมุดตัวเลขที่ลอยอยู่บนภาพจำลองมือถือ
+function Pin({
+  n,
+  tone,
+  className = "",
+}: {
+  n: number;
+  tone: LayerTone;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full font-display text-base font-bold text-white shadow-lg ring-4 ring-white ${LAYER_TONE[tone]} ${className}`}
+    >
+      {n}
+    </span>
+  );
+}
+
+// แถวคำอธิบาย 1 ชิ้น จับคู่กับหมุดเลขเดียวกัน
+function MapRow({
+  n,
+  tone,
+  emoji,
+  name,
+  role,
+  real,
+  without,
+}: {
+  n: number;
+  tone: LayerTone;
+  emoji: string;
+  name: string;
+  role: string;
+  real: string;
+  without: string;
+}) {
+  return (
+    <div className="flex gap-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-base font-bold text-white ${LAYER_TONE[tone]}`}
+      >
+        {n}
+      </span>
+      <div className="min-w-0">
+        <p className="font-display text-xl font-bold text-ink">
+          {emoji} {name}
+          <span className="ml-2 text-base font-semibold text-accent">{role}</span>
+        </p>
+        <p className="mt-1 text-ink/75">
+          <span className="font-semibold text-ink">ในแอปนี้คือ:</span> {real}
+        </p>
+        <p className="mt-1 text-sm font-medium text-ink/50">{without}</p>
       </div>
     </div>
   );
@@ -891,6 +1001,72 @@ export function SlideView(props: ViewProps) {
         </div>
       );
 
+    case "app-live-map":
+      return (
+        <div>
+          <Kicker>ของจริง ณ วินาทีนี้ 🛰️</Kicker>
+          <h1 className="mt-1 font-display text-4xl font-bold text-ink text-balance">
+            แอปที่น้องถืออยู่ตอนนี้ · หน้าตาข้างในเป็นแบบนี้
+          </h1>
+          <p className="mt-2 text-xl text-ink/60">
+            ไม่มีเซิร์ฟเวอร์ที่ไหนเลย — ทุกอย่างรันอยู่บนโน้ตบุ๊กเครื่องนี้เครื่องเดียว 💻
+          </p>
+
+          <div className="mt-6 flex flex-col items-stretch gap-2 lg:flex-row lg:items-stretch">
+            <div className="flex-1">
+              <MapCard
+                emoji="📱"
+                title="มือถือน้อง"
+                sub="~50 เครื่อง"
+                detail="หน้าเว็บที่น้องเห็นและกดโหวต"
+                tone="brand"
+              />
+            </div>
+            <MapArrows out="คำตอบของน้อง" back="ประกาศผลกลับ" />
+            <div className="flex-1">
+              <MapCard
+                emoji="☁️"
+                title="อินเทอร์เน็ต"
+                sub="braincamp.ponggun.com"
+                detail="ท่อที่พาข้อมูลวิ่งเข้ามาถึงโน้ตบุ๊กพี่"
+                tone="sky"
+              />
+            </div>
+            <MapArrows out="ส่งต่อ" back="ส่งกลับ" />
+            <div className="flex-1">
+              <MapCard
+                emoji="💻"
+                title="โน้ตบุ๊กพี่"
+                sub="สมองของงานนี้"
+                detail="จำว่าเปิดกิจกรรมไหน · นับคะแนน · สั่งจอทุกเครื่องพร้อมกัน"
+                tone="ink"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-black/5">
+              <p className="font-display font-bold text-ink">📞 เปิดสายค้างไว้ ไม่ต้องถามซ้ำ</p>
+              <p className="mt-1 text-ink/70">
+                มือถือทุกเครื่องเปิดสายคุยกับโน้ตบุ๊กค้างไว้เครื่องละ 1 สาย —
+                เงียบไว้เฉย ๆ จนกว่าพี่จะกด แล้วค่อยได้ยินพร้อมกันทุกคน
+              </p>
+            </div>
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-black/5">
+              <p className="font-display font-bold text-ink">🖥️ จอใหญ่ก็คือลูกค้าอีกคน</p>
+              <p className="mt-1 text-ink/70">
+                จอที่ฉายอยู่นี้ก็ต่อสายเดียวกัน — พอน้องกดโหวต โน้ตบุ๊กนับเสร็จ
+                ก็ประกาศออกมา กราฟเลยขยับทันที
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-4 text-center text-xl font-semibold text-accent text-balance">
+            เว็บ/แอปที่น้องใช้ทุกวันก็หน้าตาแบบนี้ — แค่ &ldquo;โน้ตบุ๊กพี่&rdquo; ถูกเปลี่ยนเป็นเครื่องใหญ่ในศูนย์ข้อมูล ⚡
+          </p>
+        </div>
+      );
+
     case "fe-be-quiz":
       return (
         <ActivitySlide
@@ -931,6 +1107,82 @@ export function SlideView(props: ViewProps) {
           </div>
           <p className="mt-6 text-center text-xl font-semibold text-brand">
             3 อย่างนี้รวมกัน = หน้าเว็บที่น้องเห็นและเล่นได้
+          </p>
+        </div>
+      );
+
+    case "frontend-three-map":
+      return (
+        <div>
+          <Kicker>ของจริงบนมือถือน้อง 🔍</Kicker>
+          <h1 className="mt-1 font-display text-4xl font-bold text-ink text-balance">
+            3 ชิ้นนี้ อยู่ตรงไหนในแอปที่น้องเพิ่งกด?
+          </h1>
+
+          <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,320px)_1fr]">
+            {/* จำลองหน้าจอมือถือน้อง พร้อมหมุดชี้ 1-2-3 */}
+            <div className="relative mx-auto w-[290px] rounded-[2rem] border-8 border-ink bg-white p-4 shadow-xl">
+              <Pin n={1} tone="html" className="-left-4 -top-3" />
+              <h2 className="font-display text-xl font-bold text-ink text-balance">
+                Frontend กับ Backend ต่างกันยังไง?
+              </h2>
+              <p className="mt-1 text-sm text-ink/60">เดาเล่น ๆ ได้เลย</p>
+              <div className="mt-4 grid gap-2">
+                <div className="relative flex items-center gap-2 rounded-2xl border-2 border-brand bg-brand-light px-3 py-3 shadow-md">
+                  <Pin n={2} tone="css" className="-left-4 top-1/2 -translate-y-1/2" />
+                  <span className="text-xl">🖼️</span>
+                  <span className="flex-1 text-sm font-medium text-ink">
+                    Frontend คือสิ่งที่เราเห็น
+                  </span>
+                  <span className="text-brand">✓</span>
+                </div>
+                <div className="flex items-center gap-2 rounded-2xl border-2 border-black/10 bg-white px-3 py-3">
+                  <span className="text-xl">🧠</span>
+                  <span className="flex-1 text-sm font-medium text-ink">
+                    Backend คือสมองเบื้องหลัง
+                  </span>
+                </div>
+              </div>
+              <div className="relative mt-4 rounded-xl bg-brand-light px-3 py-2 text-center text-xs font-medium text-brand-dark">
+                <Pin n={3} tone="js" className="-left-4 top-1/2 -translate-y-1/2" />
+                ✅ ส่งคำตอบแล้ว!
+              </div>
+            </div>
+
+            {/* คำอธิบายจับคู่กับหมุด */}
+            <div className="grid gap-3">
+              <MapRow
+                n={1}
+                tone="html"
+                emoji="🏗️"
+                name="HTML"
+                role="โครงบ้าน"
+                real="คำถาม · ปุ่มตัวเลือก 2 ปุ่ม · ข้อความ “ส่งคำตอบแล้ว” — ของที่ต้อง “มีอยู่” บนหน้าจอ"
+                without="ถ้าไม่มี = ไม่มีอะไรให้กดเลย"
+              />
+              <MapRow
+                n={2}
+                tone="css"
+                emoji="🎨"
+                name="CSS"
+                role="ทาสี แต่งบ้าน"
+                real="ปุ่มมนโค้ง · พื้นเขียวอ่อนตอนถูกเลือก · ตัวหนังสือใหญ่พอให้กดง่ายบนมือถือ"
+                without="ถ้าไม่มี = เป็นข้อความเปล่า ๆ ขาว-ดำ เหมือนสมัยยุค 90"
+              />
+              <MapRow
+                n={3}
+                tone="js"
+                emoji="⚡"
+                name="JavaScript"
+                real="กดแล้วเครื่องหมาย ✓ เด้งขึ้น · ส่งคำตอบไปโน้ตบุ๊กพี่ · รับผลกลับมาแสดง"
+                role="รีโมท/สวิตช์"
+                without="ถ้าไม่มี = กดแล้วเงียบ ไม่มีอะไรเกิดขึ้น"
+              />
+            </div>
+          </div>
+
+          <p className="mt-5 text-center text-xl font-semibold text-accent text-balance">
+            หน้าเดียวที่น้องเพิ่งกด ใช้ครบทั้ง 3 ชิ้นพร้อมกัน — และเว็บทุกเว็บบนโลกก็ประกอบแบบนี้ 🧩
           </p>
         </div>
       );

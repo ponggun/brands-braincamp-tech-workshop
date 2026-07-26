@@ -110,7 +110,30 @@
       "detail": "Build โหมดสำรอง client-only (/join ทำงานเองไม่ต้องมี server) ไว้ deploy Vercel เป็น QR สำรอง"
     },
     {
-      "label": "6. Expose via ngrok (port 3000)",
+      "label": "6. Expose via Cloudflare Tunnel (port 3000)",
+      "type": "shell",
+      "command": "cloudflared tunnel run --token \"$(tr -d '[:space:]' < .cloudflared-token)\"",
+      "windows": {
+        "command": "cloudflared.exe tunnel run --token (Get-Content .cloudflared-token -Raw).Trim()"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "isBackground": true,
+      "detail": "ทางหลักวันงาน — เปิด tunnel ไปโดเมนตัวเอง (ไม่จำกัดจำนวน request) · ต้องติดตั้ง cloudflared + วาง token จาก Zero Trust ไว้ในไฟล์ .cloudflared-token ก่อน (ดูขั้นตอนใน README) · รัน Task 2/4 ให้ขึ้นก่อน · รองรับทั้ง macOS และ Windows"
+    },
+    {
+      "label": "7. Expose via ngrok (สำรอง)",
       "type": "shell",
       "command": "ngrok",
       "args": ["http", "3000"],
@@ -128,7 +151,51 @@
       },
       "problemMatcher": [],
       "isBackground": true,
-      "detail": "เปิด tunnel ให้น้องสแกน — รัน Task 2/4 (พอร์ต 3000) ให้ขึ้นก่อน · จากนั้นเปิดหน้า /present ผ่าน URL ngrok (https://xxxx.ngrok-free.app/present) แล้ว QR จะชี้ tunnel ให้อัตโนมัติ (ต้องติดตั้ง ngrok ก่อน)"
+      "detail": "สำรองถ้า Cloudflare มีปัญหา · ถ้าใช้ตัวนี้ต้องคอมเมนต์ NEXT_PUBLIC_JOIN_URL ใน .env.local ออกก่อน แล้วเปิด /present ผ่าน URL ngrok เพื่อให้ QR ชี้ถูก (ngrok free จำกัดจำนวน request)"
+    },
+    {
+      "label": "8. Show LAN URL (สำรองสุดท้าย)",
+      "type": "shell",
+      "command": "echo \"น้องเข้าที่ http://$(ipconfig getifaddr en0):3000/join (ต้องอยู่ Wi-Fi เดียวกัน และ Wi-Fi ต้องไม่เปิด AP isolation)\"",
+      "windows": {
+        "command": "Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notmatch 'Loopback' } | ForEach-Object { Write-Host \"น้องเข้าที่ http://$($_.IPAddress):3000/join\" }"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "detail": "โชว์ URL ในวง LAN ไว้ใช้ตอนเน็ตงานล่ม — ไม่ต้องพึ่ง tunnel เลย"
+    },
+    {
+      "label": "9. Kill port 3000",
+      "type": "shell",
+      "command": "PIDS=$(lsof -ti tcp:3000); if [ -z \"$PIDS\" ]; then echo 'พอร์ต 3000 ว่างอยู่แล้ว ✅'; else echo \"กำลังปิด: $PIDS\"; kill -9 $PIDS; sleep 1; echo 'ปิดเรียบร้อย ✅'; fi",
+      "windows": {
+        "command": "$p = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue; if (-not $p) { Write-Host 'พอร์ต 3000 ว่างอยู่แล้ว ✅' } else { $p.OwningProcess | Sort-Object -Unique | ForEach-Object { Stop-Process -Id $_ -Force }; Write-Host 'ปิดเรียบร้อย ✅' }"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "detail": "ฆ่าโปรเซสที่ค้างพอร์ต 3000 — ใช้เวลารันค้างแล้วลืมปิด หรือ build ใหม่แล้วหน้าเว็บพัง (ChunkLoadError)"
     }
   ]
 }
