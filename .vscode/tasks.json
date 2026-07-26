@@ -196,6 +196,28 @@
       },
       "problemMatcher": [],
       "detail": "ฆ่าโปรเซสที่ค้างพอร์ต 3000 — ใช้เวลารันค้างแล้วลืมปิด หรือ build ใหม่แล้วหน้าเว็บพัง (ChunkLoadError)"
+    },
+    {
+      "label": "10. Stop Cloudflare Tunnel",
+      "type": "shell",
+      "command": "PIDS=$(pgrep -f 'cloudflared tunnel'); if [ -z \"$PIDS\" ]; then echo 'ไม่มี tunnel รันอยู่ ✅'; else echo \"กำลังปิด: $PIDS\"; kill $PIDS; sleep 2; if pgrep -f 'cloudflared tunnel' > /dev/null; then kill -9 $PIDS; sleep 1; fi; echo '✅ ปิด tunnel แล้ว — โดเมนจะขึ้น error 1033 จนกว่าจะรัน Task 6 ใหม่'; fi",
+      "windows": {
+        "command": "$p = Get-Process cloudflared -ErrorAction SilentlyContinue; if ($p) { $p | Stop-Process -Force; Write-Host '✅ ปิด tunnel แล้ว — โดเมนจะขึ้น error 1033 จนกว่าจะรัน Task 6 ใหม่' } else { Write-Host 'ไม่มี tunnel รันอยู่ ✅' }"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": [],
+      "detail": "ปิด tunnel ที่รันจาก Task 6 · เปิดกลับด้วย Task 6 ได้เลย"
     }
   ]
 }

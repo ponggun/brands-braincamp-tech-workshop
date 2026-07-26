@@ -43,6 +43,7 @@ npm run build && npm run start      # เพิ่ม -- -p 3100 เพื่อ
 | 7. Expose via ngrok | สำรอง (ngrok free จำกัดจำนวน request) |
 | 8. Show LAN URL | สำรองสุดท้าย — ให้น้องเข้าผ่าน Wi-Fi วงเดียวกัน |
 | 9. Kill port 3000 | ฆ่าโปรเซสที่ค้างพอร์ต 3000 |
+| 10. Stop Cloudflare Tunnel | ปิด tunnel ที่รันจาก Task 6 |
 
 > ⚠️ Task 6/7 forward ไป `localhost:3000` → **ต้องรัน Task 2 หรือ 4 (พอร์ต 3000) ให้ขึ้นก่อน**
 >
@@ -130,9 +131,29 @@ cloudflared.exe tunnel run --token (Get-Content .cloudflared-token -Raw).Trim()
 ขึ้นบรรทัด `Registered tunnel connection` = ต่อติดแล้ว · หน้า Tunnels บนเว็บจะเปลี่ยนสถานะเป็น **HEALTHY**
 กด `Ctrl+C` เพื่อหยุด · หลังจากนี้ใช้ **Task 6** ใน VS Code แทนได้เลย (รองรับทั้ง Mac/Windows ในตัว)
 
-> อยากให้ tunnel รันเองตอนเปิดเครื่อง ค่อยใช้คำสั่ง `service install` ที่เว็บให้มา
+> อยากให้ tunnel ขึ้นเองตอนเปิดเครื่อง ใช้คำสั่ง `service install` ที่เว็บให้มาแทน
 > (Mac: `sudo cloudflared service install <token>` · Windows: `cloudflared.exe service install <token>` ใน Command Prompt แบบ Administrator)
-> ถอนออกด้วย `cloudflared service uninstall` · **ถ้าติดตั้งเป็น service แล้ว อย่ารัน Task 6 ซ้ำ** จะมี connector ซ้อนกัน
+> **ถ้าติดตั้งเป็น service แล้ว ไม่ต้องรัน Task 6 อีก** จะกลายเป็น connector ซ้อนกัน 2 ตัว
+
+---
+
+### ปิด / เปิด tunnel
+
+| อยากทำ | ใช้ |
+|---|---|
+| เปิด tunnel | **Task 6** (หรือ `Ctrl+C` แล้วกดใหม่) |
+| ปิด tunnel | **Task 10 · Stop Cloudflare Tunnel** |
+| เช็คว่ารันอยู่ไหม | `pgrep -f "cloudflared tunnel"` · หรือดูโดเมน: **502** = tunnel ขึ้นแต่แอปยังไม่รัน · **error 1033** = tunnel ดับ |
+| เลิกใช้ tunnel ถาวร | ลบ tunnel ในหน้า Zero Trust (DNS record หายตาม) |
+
+> 💡 **ถ้าเผลอติดตั้งเป็น service ไว้** (`cloudflared service install`) การ kill โปรเซสเฉย ๆ จะไม่พอ เพราะระบบตั้ง `KeepAlive`
+> ให้ปลุกตัวเองใหม่ — ต้อง `sudo cloudflared service uninstall` ก่อน แล้วค่อยกลับมาใช้ Task 6 / Task 10 ตามปกติ
+> (tunnel, โดเมน, DNS บน Cloudflare ไม่หายไปไหน ตราบใดที่ `.cloudflared-token` ยังอยู่ กด Task 6 ก็ได้ URL เดิม)
+
+**ปล่อย tunnel ค้างไว้ได้ไหม?** ได้ ไม่มีค่าใช้จ่าย ไม่กินทรัพยากร และเปิดทางเข้าแค่ `localhost:3000` เท่านั้น
+แต่จำไว้ 2 ข้อ: (1) ถ้าวันหลังรันโปรเจกต์อื่นที่พอร์ต 3000 มัน**จะหลุดออกเน็ตทันทีโดยไม่รู้ตัว**
+(2) ตอนแอปรันอยู่ ใครที่รู้ URL ก็ตอบกิจกรรมได้ — ข้อความจากกิจกรรมแบบพิมพ์ตอบจะขึ้นจอโปรเจกเตอร์สด ๆ
+(`PRESENTER_KEY` กันได้แค่ปุ่มเปิด/ปิด/ล้างผล) · ถ้าไม่ได้ใช้ยาว ๆ ปิดด้วย Task 10 ไว้ก่อนสบายใจกว่า
 
 ---
 
