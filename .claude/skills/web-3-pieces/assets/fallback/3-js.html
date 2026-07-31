@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ชานมพี่ป้อง</title>
+  <style>
+    body {
+      font-family: "Sukhumvit Set", "Noto Sans Thai", -apple-system, sans-serif;
+      background: #f4f6fb;
+      color: #1f2a44;
+      font-size: 20px;
+      margin: 0;
+      padding: 24px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #e2571f, #d12a52);
+      color: #fff;
+      border-radius: 20px;
+      padding: 28px 32px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 44px; margin: 0 0 8px; }
+    .tagline { margin: 0; font-size: 22px; font-weight: 600; }
+    main { max-width: 640px; margin: 24px auto; }
+    h2 { font-size: 28px; }
+    .menu { list-style: none; padding: 0; }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    .price { color: #d12a52; font-weight: 700; }
+    .vote {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    #likeBtn {
+      font-size: 22px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 999px;
+      background: #d12a52;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.12s;
+    }
+    #likeBtn:hover { background: #b02244; }
+    #likeCount { font-size: 26px; font-weight: 700; color: #d12a52; }
+    footer { text-align: center; color: #7a869a; margin-top: 24px; }
+    .qr-label { margin: 0 0 8px; font-weight: 600; color: #1f2a44; }
+    .qr {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>ชานมพี่ป้อง 🧋</h1>
+    <p class="tagline">หวานกำลังดี ไข่มุกเด้งมาก · เปิดทุกวัน 10:00–20:00</p>
+  </header>
+
+  <main>
+    <h2>เมนูขายดี</h2>
+    <ul class="menu">
+      <li class="item">ชานมไข่มุก <span class="price">45 บาท</span></li>
+      <li class="item">ชาเขียวมัทฉะ <span class="price">55 บาท</span></li>
+      <li class="item">โกโก้เย็นปั่น <span class="price">50 บาท</span></li>
+    </ul>
+
+    <section class="vote">
+      <p>ถูกใจร้านเราไหม? กดเลย!</p>
+      <button id="likeBtn">❤️ ถูกใจ</button>
+      <p class="count">ตอนนี้มี <span id="likeCount">0</span> หัวใจ</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>ทำสด ๆ ที่ BRAND'S Brain Camp 2026</p>
+    <div class="qr-box">
+      <p class="qr-label">สแกนเปิดหน้านี้บนมือถือ 📱</p>
+      <img class="qr" src="/demo/qr.png" alt="QR สำหรับเปิดหน้านี้บนมือถือ" width="180" height="180">
+    </div>
+  </footer>
+
+  <script>
+    let count = 0;
+    const btn = document.getElementById("likeBtn");
+    const label = document.getElementById("likeCount");
+
+    btn.addEventListener("click", function () {
+      count = count + 1;
+      label.textContent = count;
+      btn.textContent = "❤️ ถูกใจแล้ว " + count;
+
+      btn.style.transform = "scale(1.15)";
+      setTimeout(function () {
+        btn.style.transform = "scale(1)";
+      }, 120);
+    });
+  </script>
+</body>
+</html>

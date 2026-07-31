@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>พอร์ตของน้องมิว</title>
+  <style>
+    body {
+      font-family: "Sukhumvit Set", "Noto Sans Thai", -apple-system, sans-serif;
+      background: #f5f4fb;
+      color: #221a3d;
+      font-size: 20px;
+      margin: 0;
+      padding: 24px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #6d3bf0, #c026a8);
+      color: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 44px; margin: 0 0 8px; }
+    .tagline { margin: 0; font-size: 22px; font-weight: 600; }
+    main { max-width: 640px; margin: 24px auto; }
+    h2 { font-size: 28px; }
+    .works { list-style: none; padding: 0; }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    .tag {
+      background: #efe9ff;
+      color: #6d3bf0;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 6px 14px;
+    }
+    .contact, .cheer {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    .cheer { text-align: center; margin-top: 24px; }
+    #cheerBtn {
+      font-size: 22px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 999px;
+      background: #6d3bf0;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.12s;
+    }
+    #cheerBtn:hover { background: #5a2ed6; }
+    #cheerCount { font-size: 26px; font-weight: 700; color: #6d3bf0; }
+    footer { text-align: center; color: #6b6486; margin-top: 24px; }
+    .qr-label { margin: 0 0 8px; font-weight: 600; color: #221a3d; }
+    .qr {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>สวัสดี ฉันชื่อ "มิว" 🧑‍🎤</h1>
+    <p class="tagline">ม.5 · ชอบวาดรูป ชอบเพลง และกำลังหัดเขียนเว็บ</p>
+  </header>
+
+  <main>
+    <h2>ผลงานของฉัน</h2>
+    <ul class="works">
+      <li class="item">วาดปกเพลงให้วงเพื่อน <span class="tag">ออกแบบ</span></li>
+      <li class="item">ตัดคลิปงานกีฬาสีของโรงเรียน <span class="tag">วิดีโอ</span></li>
+      <li class="item">ทำหน้าเว็บนี้ที่ Brain Camp <span class="tag">โค้ด</span></li>
+    </ul>
+
+    <h2>ติดต่อฉัน</h2>
+    <p class="contact">IG: @mew.draws · อีเมล: mew@example.com</p>
+
+    <section class="cheer">
+      <p>ชอบพอร์ตนี้ไหม? กดให้กำลังใจหน่อย!</p>
+      <button id="cheerBtn">👏 ให้กำลังใจ</button>
+      <p class="count">มีคนเชียร์แล้ว <span id="cheerCount">0</span> คน</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>ทำสด ๆ ที่ BRAND'S Brain Camp 2026</p>
+    <div class="qr-box">
+      <p class="qr-label">สแกนเปิดหน้านี้บนมือถือ 📱</p>
+      <img class="qr" src="/demo/qr.png" alt="QR สำหรับเปิดหน้านี้บนมือถือ" width="180" height="180">
+    </div>
+  </footer>
+
+  <script>
+    let count = 0;
+    const btn = document.getElementById("cheerBtn");
+    const label = document.getElementById("cheerCount");
+
+    btn.addEventListener("click", function () {
+      count = count + 1;
+      label.textContent = count;
+      btn.textContent = "👏 ให้กำลังใจแล้ว " + count;
+
+      btn.style.transform = "scale(1.15)";
+      setTimeout(function () {
+        btn.style.transform = "scale(1)";
+      }, 120);
+    });
+  </script>
+</body>
+</html>
